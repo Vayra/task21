@@ -1,17 +1,15 @@
 package no.noroff.task21.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import java.util.List;
 
 
 @Entity
-@Table(name = "characterClass")
-public class characterClass {
+public class CharacterClass {
 
-    public characterClass() {}
+    public CharacterClass() {}
 
     public String getClassName() {
         return className;
@@ -45,16 +43,15 @@ public class characterClass {
         this.abilities = abilities;
     }
 
-    @Column(name = "className")
     private String className;
 
     @Id
-    @Column(name = "classID")
+    @GeneratedValue(generator = "incrementer")
+    @GenericGenerator(name = "incrementer", strategy = "increment")
     private int classID;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "abilities")
     private String abilities;
 }

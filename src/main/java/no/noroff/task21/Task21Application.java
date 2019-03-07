@@ -1,7 +1,7 @@
 package no.noroff.task21;
 
+import no.noroff.task21.models.CharacterClass;
 import no.noroff.task21.models.characters;
-import no.noroff.task21.models.characterClass;
 import no.noroff.task21.models.users;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,7 +10,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 public class Task21Application {
@@ -26,6 +28,11 @@ public class Task21Application {
 			"Fewer still are those who leave the Cauldron with eyes of molten brass, burning with the hatred of our Dark god. " +
 			"These true chosen are taken into the cult and trained in the most secret of rites, emerging as masters of death second only to Khaine himself." +
 			"-- Haridar of Har Ganeth";
+
+	private static String sorcDescription = "A Sorceress must walk the dark paths of the Realm of Chaos, the deep pits of the oceans and the bowls of the fiery mountains in her quest for knowledge. " +
+			"The channeling of the raw Winds of Chaos is what gives the Sorceress her power. " +
+			"The Creatures of the Chaos Hells will bow to her will in the end. Such Power is vast but dangerous and the aspirant to the Dark Convent of Sorceresses must be courageous and strong." +
+			"-- From the sixth book of secrets by Kaladhtoir of Clar Karond";
 	public static void main(String[] args) {
 
 		for (users u : getUsers()){
@@ -37,7 +44,8 @@ public class Task21Application {
 		}
 
 		//addClass("Blackguard", bgDescription, "'Hold the Line!', 'Cleave', 'Shield Bash'");
-		addClass("Disciple of Khaine",dokDescription, "'Khaine's Embrace', 'Cleave Soul', 'Khaine's Blessing', 'Soul Infusion");
+		//addClass("Disciple of Khaine",dokDescription, "'Khaine's Embrace', 'Cleave Soul', 'Khaine's Blessing', 'Soul Infusion");
+		//addClass("Sorceress", sorcDescription, "'Doombolt', 'Chillwind', 'Pit of Shades', 'Word of Pain");
 
 		SpringApplication.run(Task21Application.class, args);
 	}
@@ -46,19 +54,18 @@ public class Task21Application {
 	 * Gets all users
 	 * @return all users objects
 	 */
-	public static List<users> getUsers(){
-		List<users> userList = null;
+	public static ArrayList<users> getUsers(){
+		ArrayList<users> userList = null;
 
 		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
 		EntityTransaction transaction = null;
-
-		System.out.println("Getting users");
 
 		try{
 			transaction = manager.getTransaction();
 			transaction.begin();
 
-			userList = manager.createQuery("SELECT s from users s", users.class).getResultList();
+			userList = (ArrayList<users>)manager.createQuery("SELECT s from users s", users.class).getResultList();
+
 
 			transaction.commit();
 
@@ -67,6 +74,8 @@ public class Task21Application {
 		} finally{
 			manager.close();
 		}
+
+		System.out.println("Found " + userList.size() + " users.");
 
 		return userList;
 	}
@@ -81,15 +90,16 @@ public class Task21Application {
 
 		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
 		EntityTransaction transaction = null;
-
 		try{
 			transaction = manager.getTransaction();
 			transaction.begin();
 
 			u = manager.createQuery("SELECT s from users s WHERE id="+id, users.class).getSingleResult();
+
 			transaction.commit();
 
 		} catch (Exception e){
+			System.out.println(e.getMessage());
 			if (transaction != null) transaction.rollback();
 		} finally{
 			manager.close();
@@ -139,7 +149,31 @@ public class Task21Application {
 			transaction = manager.getTransaction();
 			transaction.begin();
 
-			c = manager.createQuery("SELECT s FROM characters s WHERE characterName='" + name +"'" , characters.class).getSingleResult();
+			c = manager.createQuery("SELECT s FROM characters s WHERE s.characterName= :name" ,
+					characters.class).setParameter("name",name).getSingleResult();
+
+			transaction.commit();
+
+		} catch (Exception e){
+			if (transaction != null) transaction.rollback();
+		} finally{
+			manager.close();
+		}
+
+		return c;
+	}
+
+	public static List<characters> getCharactersByID(String id){
+		ArrayList<characters> c = null;
+
+		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
+		EntityTransaction transaction = null;
+
+		try{
+			transaction = manager.getTransaction();
+			transaction.begin();
+
+			c = (ArrayList<characters>)manager.createQuery("SELECT s FROM characters s WHERE user_id='" + id +"'" , characters.class).getResultList();
 
 			transaction.commit();
 
@@ -156,8 +190,8 @@ public class Task21Application {
 	 *  Gets a list of possible characters classes
 	 * @return List of characters class objects
 	 */
-	public static List<characterClass> getCharClasses(){
-		List<characterClass> classList = null;
+	public static List<CharacterClass> getCharClasses(){
+		List<CharacterClass> classList = null;
 
 		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
 		EntityTransaction transaction = null;
@@ -166,7 +200,7 @@ public class Task21Application {
 			transaction = manager.getTransaction();
 			transaction.begin();
 
-			classList = manager.createQuery("SELECT s FROM characterClass s", characterClass.class).getResultList();
+			classList = manager.createQuery("SELECT s FROM CharacterClass s", CharacterClass.class).getResultList();
 
 			transaction.commit();
 		} catch (Exception e){
@@ -179,12 +213,12 @@ public class Task21Application {
 	}
 
 	/**
-	 * Gets the characterClass object for the given className
+	 * Gets the CharacterClass object for the given className
 	 * @param name Name of the class
-	 * @return characterClass matching the name, null if none were found
+	 * @return CharacterClass matching the name, null if none were found
 	 */
-	public static characterClass getCharacterClass(String name){
-		characterClass c = null;
+	public static CharacterClass getCharacterClass(String name){
+		CharacterClass c = null;
 
 		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
 		EntityTransaction transaction = null;
@@ -193,8 +227,8 @@ public class Task21Application {
 			transaction = manager.getTransaction();
 			transaction.begin();
 
-			c = manager.createQuery("SELECT s FROM characterClass s WHERE className='" + name +"'" , characterClass.class).getSingleResult();
-
+			c = manager.createQuery("SELECT s FROM CharacterClass s WHERE s.className= :name" ,
+					CharacterClass.class).setParameter("name",name).getSingleResult();
 			transaction.commit();
 
 		} catch (Exception e){
@@ -266,22 +300,26 @@ public class Task21Application {
 	 * @param level Character level (default: 1)
 	 * @param characterClass Character class
 	 */
-	public static void addCharacter(int userID, String characterName, int level, String characterClass){
+	public static void addCharacter(long userID, String characterName, int level, String characterClass){
 		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
 		EntityTransaction transaction = null;
+
+		System.out.println("Finding class: " + characterClass);
+		CharacterClass c = getCharacterClass(characterClass);
+		System.out.println(c.getClassName());
 
 		try {
 			transaction = manager.getTransaction();
 			transaction.begin();
 
+			users user = manager.createQuery("SELECT s FROM users s WHERE id=" + userID +"" , users.class).getSingleResult();
 			characters newCharacter = new characters();
 
-			newCharacter.setUserID(userID);
 			newCharacter.setCharacterName(characterName);
 			newCharacter.setLevel(level);
-			newCharacter.setCharacterClass(characterClass);
-
-			manager.persist(newCharacter);
+			newCharacter.setCharacterClass(c);
+			user.addChars(newCharacter);
+			manager.persist(user);
 
 			transaction.commit();
 		} catch (Exception e) {
@@ -293,24 +331,15 @@ public class Task21Application {
 
 	/**
 	 * Add character from character object
-	 * @param c character object to add
+	 * @param data json data in Map<String, String> format
 	 */
-	public static void addCharacter(characters c){
-		EntityManager manager =  ENTITY_MANAGER_FACTORY.createEntityManager();
-		EntityTransaction transaction = null;
+	public static void addCharacter(Map<String, String> data){
+		long uid = Long.parseLong(data.get("user_id"));
+		String charName = data.get("characterName");
+		int level = Integer.parseInt(data.get("level"));
+		String charClass = data.get("characterClass");
 
-		try {
-			transaction = manager.getTransaction();
-			transaction.begin();
-
-			manager.persist(c);
-
-			transaction.commit();
-		} catch (Exception e) {
-			if (transaction != null) transaction.rollback();
-		} finally {
-			manager.close();
-		}
+		addCharacter(uid, charName, level, charClass);
 	}
 
 	public static void addClass(String className, String description, String abilities){
@@ -321,7 +350,7 @@ public class Task21Application {
 			transaction = manager.getTransaction();
 			transaction.begin();
 
-			characterClass newClass = new characterClass();
+			CharacterClass newClass = new CharacterClass();
 
 			newClass.setClassName(className);
 			newClass.setDescription(description);

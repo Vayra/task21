@@ -1,23 +1,21 @@
 package no.noroff.task21.models;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 
 @Entity
-@Table(name = "characters")
 public class characters {
 
     public characters(){}
 
-    public int getUserID() {
-        return userID;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getCharacterName() {
@@ -32,33 +30,43 @@ public class characters {
         return level;
     }
 
+    public void setUser(users user){
+        this.user = user;
+    }
+
     public void setLevel(int level) {
         this.level = level;
     }
 
-    public String getCharacterClass() {
+    public CharacterClass getCharacterClass() {
         return characterClass;
     }
 
-    public void setCharacterClass(String characterClass) {
+    public void setCharacterClass(CharacterClass characterClass) {
         this.characterClass = characterClass;
     }
 
     @Override
     public String toString(){
-        return characterName + ", " + characterClass + " " + level;
+        return characterName + ", " + characterClass.getClassName() + " " + level;
     }
 
-    @Column(name="userID")
-    private int userID;
+    @ManyToOne
+    private users user;
+
 
     @Id
-    @Column(name="characterName")
+    @GeneratedValue(generator = "incrementer")
+    @GenericGenerator(name = "incrementer", strategy = "increment")
+
+    private Long id;
+
     private String characterName;
 
-    @Column(name="level")
     private int level;
 
-    @Column(name = "characterClass")
-    private String characterClass;
+    @OneToOne
+    private CharacterClass characterClass;
+
+
 }

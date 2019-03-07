@@ -1,13 +1,13 @@
 package no.noroff.task21.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name="users")
 public class users implements Serializable {
 
     public users(){} // Empty constructor for deserializer
@@ -44,21 +44,32 @@ public class users implements Serializable {
         this.email = email;
     }
 
+    public List<characters> getChars(){
+        return characters;
+    }
+
+    public void addChars(characters character){
+        characters.add(character);
+        character.setUser(this);
+    }
+
     @Id
-    @Column(name="id", unique = true)
+    @GeneratedValue(generator = "incrementer")
+    @GenericGenerator(name = "incrementer", strategy = "increment")
     private int id;
 
-    @Column(name="username")
     private String username;
 
-    @Column(name="password")
     private String password;
 
-    @Column(name="email")
     private String email;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    private List<characters> characters = new ArrayList<>();
 
     @Override
     public String toString(){
         return username + " ****, " + email;
     }
 }
+
