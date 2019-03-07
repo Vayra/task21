@@ -1,6 +1,7 @@
 # task21
 
-# GET Options
+# GET Options  
+Returns JSON
 
 **/users/**     --Gets all users  
 
@@ -10,23 +11,24 @@
 
 **/character/id/{id}** -- Gets all characters tied to the user ID.
 
-**/class/{className}** -- Gets class by name
+**/class/{className}** -- Gets class by name: Implemented classes: Blackguard, Disciple of Khaine, Sorceress
 
 # POST Options
+Use content type: application/json
 
 **/user** -- Adds user to the DB  
 Example format:
-curl -i -H "Content-Type: application/json" -X POST -d '{  
+{  
 "username" : "user1",  
 "password" : "pass",  
 "email"    : "user@gmail.com"  
-}' localhost:8080/user
+}
 
 **/character** -- Adds character to the DB  
 Example format:  
-curl -i -H "Content-Type: application/json" -X POST -d '{  
-"userID"         : 1,  
+{  
+"user_id"         : 1,  
 "characterName"  : "Bob",  
 "level"          : 50,  
 "characterClass" : "Blackguard"  
-}' localhost:8080/character
+}
